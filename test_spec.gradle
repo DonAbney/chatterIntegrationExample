@@ -1,5 +1,0 @@
-class gradleTest extend groovyTestCase {
-	void testFail {
-		assert 1 == 2
-	}
-}
