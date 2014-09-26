@@ -56,7 +56,8 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 
 	void testCreateFeedItemHttpRequestWithCorrectGroupAndTopic() {
 		FeedItemRetrieverImpl feedItemRetrieverImpl = new FeedItemRetrieverImpl()
-		HttpUriRequest request = feedItemRetrieverImpl.createFeedItemHttpRequest("testUrl", "token", "group", "topic")
-		assertTrue(request.getURI().toString().contains("testUrl"));
+		HttpUriRequest request = feedItemRetrieverImpl.createFeedItemHttpRequest("testUrl", "token", "testGroup", "topic")
+		
+		assertEquals("testUrl/services/data/v32.0/chatter/feeds/record/testGroup/feed-elements", request.getURI().toString());
 	}
 }
