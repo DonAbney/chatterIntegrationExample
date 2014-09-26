@@ -1,16 +1,62 @@
 package com.pillartechnology.bootcamp.salesforce
-import com.pillartechnology.bootcamp.salesforce.FeedItemRetriever;
-import com.pillartechnology.bootcamp.salesforce.InvalidInputException;
+
+import org.apache.http.client.methods.HttpUriRequest
+
+import sun.misc.IOUtils
+
 
 class FeedItemRetrieverTest extends GroovyTestCase {
 
-    void testRetrieveFeedItemsReturnsExceptionWithNullInput() {
+	private FeedItemRetriever feedItemRetriever;
 
-        FeedItemRetriever feedItemRetriever = new FeedItemRetriever()
+	void initFeedItemRetriever() {
+		feedItemRetriever = new FeedItemRetrieverImpl()
+	}
 
-        shouldFail(InvalidInputException) {
-            feedItemRetriever.findFeedItems()
-        }
-    }
+	void testFindFeedItemsDoesNotFail() {
+		initFeedItemRetriever()
+		List<FeedItem> feedItems = feedItemRetriever.findFeedItems("url", "token", "group", "topic")
+		assertNotNull(feedItems)
+	}
 
+	void testFindFeedItemsReturnsExceptionWithNullInput() {
+		initFeedItemRetriever()
+		shouldFail(IllegalArgumentException) {
+			feedItemRetriever.findFeedItems(null, null, null, null)
+		}
+	}
+
+	void testFindFeedItemsFailsWithNullUrl() {
+		initFeedItemRetriever()
+		shouldFail(IllegalArgumentException) {
+			feedItemRetriever.findFeedItems(null, "token", "group", "topic")
+		}
+	}
+
+	void testFindFeedItemsFailsWithNullToken() {
+		initFeedItemRetriever()
+		shouldFail(IllegalArgumentException) {
+			feedItemRetriever.findFeedItems("url", null, "group", "topic")
+		}
+	}
+
+	void testFindFeedItemsFailsWithNullGroup() {
+		initFeedItemRetriever()
+		shouldFail(IllegalArgumentException) {
+			feedItemRetriever.findFeedItems("url", "token", null, "topic")
+		}
+	}
+
+	void testFindFeedItemsFailsWithNullTopic() {
+		initFeedItemRetriever()
+		shouldFail(IllegalArgumentException) {
+			feedItemRetriever.findFeedItems("url", "token", "group", null)
+		}
+	}
+
+	void testCreateFeedItemHttpRequestWithCorrectGroupAndTopic() {
+		FeedItemRetrieverImpl feedItemRetrieverImpl = new FeedItemRetrieverImpl()
+		HttpUriRequest request = feedItemRetrieverImpl.createFeedItemHttpRequest("testUrl", "token", "group", "topic")
+		assertTrue(request.getURI().toString().contains("testUrl"));
+	}
 }

@@ -11,6 +11,5 @@ class GradleTest extends GroovyTestCase {
 		def (url, token) = SalesforceAuthProvider.auth(clientId, clientSecret, username, password)
 		assertNotNull(url)
 		assertNotNull(token)
-		assertTrue(false)
 	}
 }
