@@ -1,3 +1,6 @@
+package com.pillartechnology.bootcamp.integration
+import com.pillartechnology.bootcamp.salesforce.SalesforceAuthProvider;
+
 class GradleTest extends GroovyTestCase {
 	
     	void testCanGetURLandTokenFromSalesforce() {
@@ -8,5 +11,6 @@ class GradleTest extends GroovyTestCase {
 		def (url, token) = SalesforceAuthProvider.auth(clientId, clientSecret, username, password)
 		assertNotNull(url)
 		assertNotNull(token)
+		assertTrue(false)
 	}
 }

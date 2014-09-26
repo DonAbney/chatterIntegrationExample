@@ -1,4 +1,5 @@
 apply plugin: 'groovy'
+apply plugin: 'eclipse'
 defaultTasks 'test'
 buildDir = 'out'
 
@@ -14,6 +15,7 @@ dependencies {
 }
 
 test {
+    exclude '**/integration/**'
     outputs.upToDateWhen { false }
     testLogging.showStandardStreams = true
     testLogging {
