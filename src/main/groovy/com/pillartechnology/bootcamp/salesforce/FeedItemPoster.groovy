@@ -14,7 +14,7 @@ class FeedItemPoster {
 		throw new InvalidPostRequestException()
 	}
 
-	HttpUriRequest createFeedRequest(String url, String feedback) {
+	HttpUriRequest createFeedRequest(String url, String token, String feedback) {
 		def output = new JsonBuilder()
 		output {
 			body {
@@ -28,7 +28,7 @@ class FeedItemPoster {
 		}
 
 		def request = RequestBuilder.post()
-				.addHeader(new BasicHeader("Authorization", "Bearer"))
+				.addHeader(new BasicHeader("Authorization", "Bearer ${token}"))
 				.addHeader("Content-Type", "application/json")
 				.setUri("${url}/services/data/v31.0/chatter/feed-elements")
 				.setEntity(new StringEntity(output.toPrettyString()))

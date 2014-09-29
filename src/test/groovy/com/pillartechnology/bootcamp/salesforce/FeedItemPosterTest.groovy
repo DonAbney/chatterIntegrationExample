@@ -22,33 +22,33 @@ class FeedItemPosterTest extends GroovyTestCase {
 
 	void testSubmitMessageHasURLNonEmptyPath() {
 
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "")
 		assertFalse("/".equals(request.getURI().toString()))
 	}
 
 	void testSubmitMessageHasCorrectFeedbackMessage() {
 
 		String feedback = "Sample feedback."
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", feedback)
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback)
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
 		assertTrue(requestBody.contains("Sample feedback."))
 	}
 
 	void testSubmitMessageHasValidHeaderValues() {
 
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "token", "")
 
 		Map<String, BasicHeader> headerMap = new HashMap<String, BasicHeader>()
 		request.getAllHeaders().each { header ->
 			headerMap.put(header.getName(), header)
 		}
 
-		assertEquals("Bearer", headerMap.get("Authorization").value)
+		assertEquals("Bearer token", headerMap.get("Authorization").value)
 		assertEquals("application/json", headerMap.get("Content-Type").value)
 	}
 
 	void testSubmitFeedItemFormat() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "Feedback")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "Feedback")
 		def feedback = new JsonSlurper().parseText(request.entity.content.text)
 		assertNotNull(feedback)
 	}
