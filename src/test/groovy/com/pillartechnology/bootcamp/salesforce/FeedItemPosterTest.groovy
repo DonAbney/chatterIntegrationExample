@@ -17,7 +17,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 	void testSubmitEmptyFeedItemWillNotSubmitRequestToChatter() {
 
 
-		shouldFail(InvalidPostRequestException) { feedItemPoster.postFeedItem("") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("", "", "", "") }
 	}
 
 	void testSubmitMessageHasURLNonEmptyPath() {

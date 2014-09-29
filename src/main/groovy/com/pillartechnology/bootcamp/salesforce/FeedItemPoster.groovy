@@ -4,24 +4,22 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.message.BasicHeader
 import groovy.json.JsonBuilder
 
-
-class InvalidPostRequestException extends Exception{}
-
-
 class FeedItemPoster {
 
-	void postFeedItem(String message) {
-		throw new InvalidPostRequestException()
+	void postFeedItem(String url, String token, String feedback, String topic) {
+		throw new IllegalArgumentException()
 	}
 
 	HttpUriRequest createFeedRequest(String url, String token, String feedback, String topic) {
 		def output = new JsonBuilder()
 		output {
 			body {
-				messageSegments([[
+				messageSegments([
+					[
 						type: "Text",
 						text: "${feedback} #[${topic}]"
-					]])
+					]
+				])
 			}
 			feedElementType("FeedItem")
 			subjectId("Playbook Feedback")

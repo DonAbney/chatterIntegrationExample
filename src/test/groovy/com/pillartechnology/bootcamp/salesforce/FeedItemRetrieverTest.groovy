@@ -2,9 +2,6 @@ package com.pillartechnology.bootcamp.salesforce
 
 import org.apache.http.client.methods.HttpUriRequest
 
-import sun.misc.IOUtils
-
-
 class FeedItemRetrieverTest extends GroovyTestCase {
 
 	private FeedItemRetriever feedItemRetriever;
