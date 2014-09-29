@@ -1,11 +1,9 @@
 package com.pillartechnology.bootcamp.salesforce
+import groovy.json.JsonSlurper
+
 import org.apache.http.client.methods.*
 import org.apache.http.message.BasicHeader
-import org.apache.http.params.HttpParams
 import org.junit.*
-
-import com.pillartechnology.bootcamp.salesforce.FeedItemPoster;
-import com.pillartechnology.bootcamp.salesforce.InvalidPostRequestException;
 
 class FeedItemPosterTest extends GroovyTestCase {
 
@@ -32,21 +30,26 @@ class FeedItemPosterTest extends GroovyTestCase {
 
 		String feedback = "Sample feedback."
 		HttpUriRequest request = feedItemPoster.createFeedRequest("", feedback)
-		assertFalse("".equals(request.entity.content.text))
-		assertEquals(feedback, request.entity.content.text)
+		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
+		assertTrue(requestBody.contains("Sample feedback."))
 	}
 
-	void testSubmitMessageHasValidContentType() {
+	void testSubmitMessageHasValidHeaderValues() {
 
 		HttpUriRequest request = feedItemPoster.createFeedRequest("", "")
 
 		Map<String, BasicHeader> headerMap = new HashMap<String, BasicHeader>()
-		request.getAllHeaders().each { header -> 
+		request.getAllHeaders().each { header ->
 			headerMap.put(header.getName(), header)
 		}
-		
+
 		assertEquals("Bearer", headerMap.get("Authorization").value)
 		assertEquals("application/json", headerMap.get("Content-Type").value)
 	}
 
+	void testSubmitFeedItemFormat() {
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "Feedback")
+		def feedback = new JsonSlurper().parseText(request.entity.content.text)
+		assertNotNull(feedback)
+	}
 }
