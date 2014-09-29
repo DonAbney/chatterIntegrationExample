@@ -14,13 +14,13 @@ class FeedItemPoster {
 		throw new InvalidPostRequestException()
 	}
 
-	HttpUriRequest createFeedRequest(String url, String token, String feedback) {
+	HttpUriRequest createFeedRequest(String url, String token, String feedback, String topic) {
 		def output = new JsonBuilder()
 		output {
 			body {
 				messageSegments([[
 						type: "Text",
-						text: feedback
+						text: "${feedback} #[${topic}]"
 					]])
 			}
 			feedElementType("FeedItem")
