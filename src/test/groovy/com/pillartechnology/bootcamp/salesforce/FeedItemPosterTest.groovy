@@ -1,12 +1,14 @@
 package com.pillartechnology.bootcamp.salesforce
+import static org.mockito.Mockito.*
 import groovy.json.JsonSlurper
 import groovy.mock.interceptor.*
-import org.apache.http.HttpRequest
+
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.*
+import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
 import org.junit.*
-import org.apache.http.impl.client.HttpClients
+import org.mockito.*
 
 class FeedItemPosterTest extends GroovyTestCase {
 	private FeedItemPoster feedItemPoster
@@ -66,18 +68,10 @@ class FeedItemPosterTest extends GroovyTestCase {
 		assertTrue(requestBody.contains(" #[${topic}]"))
 	}
 
-//	void testForHttpClientCallInPostFeedItem() {
-//		def clientMock = new MockFor(HttpClient)
-//		clientMock.demand.execute() {}
-//		clientMock.use {
-//			feedItemPoster.postFeedItem("test","test","test","test", HttpClients.createDefault())
-//		}
-//		def flag = false
-//		HttpClient client = HttpClients.createDefault();
-//		client.metaClass.execute = { HttpUriRequest httpRequest ->
-//			flag = true
-//		}
-//		feedItemPoster.postFeedItem("test","test","test","test", client)
-//		assertTrue(flag)
-//	}
+	void testForHttpClientCallInPostFeedItem() {
+		HttpClient defaultHttpClient = Mockito.mock(HttpClient)
+		when(defaultHttpClient.execute(any())).thenReturn(null);
+		feedItemPoster.postFeedItem("test","test","test","test", defaultHttpClient)
+		Mockito.verify(defaultHttpClient, Mockito.times(1))
+	}
 }
