@@ -4,6 +4,7 @@ import com.pillartechnology.bootcamp.salesforce.FeedItemPoster
 import com.pillartechnology.bootcamp.salesforce.SalesforceAuthProvider
 import com.pillartechnology.bootcamp.salesforce.FeedItemRetriever
 import com.pillartechnology.bootcamp.salesforce.FeedItemRetrieverImpl
+import org.apache.http.client.HttpClient
 
 class FeedItemITTest extends GroovyTestCase {
 

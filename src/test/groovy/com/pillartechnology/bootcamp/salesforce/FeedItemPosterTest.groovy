@@ -1,23 +1,28 @@
 package com.pillartechnology.bootcamp.salesforce
 import groovy.json.JsonSlurper
-
+import groovy.mock.interceptor.*
+import org.apache.http.HttpRequest
+import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.*
 import org.apache.http.message.BasicHeader
 import org.junit.*
+import org.apache.http.impl.client.HttpClients
 
 class FeedItemPosterTest extends GroovyTestCase {
-
-	private FeedItemPoster feedItemPoster;
-	private HttpUriRequest request;
+	private FeedItemPoster feedItemPoster
+	private HttpUriRequest request
 
 	void setUp() {
 		feedItemPoster = new FeedItemPoster()
 	}
 
-	void testSubmitEmptyFeedItemWillNotSubmitRequestToChatter() {
-
-
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("", "", "", "") }
+	void testSubmitNullFeedItemWillNotSubmitRequestToChatter() {
+		def client = HttpClients.createDefault()
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem(null, "test", "test", "test", client) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", null, "test", "test", client) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", null, "test", client) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", null, client) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", null) }
 	}
 
 	void testSubmitMessageHasURLNonEmptyPath() {
@@ -52,7 +57,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 		def feedback = new JsonSlurper().parseText(request.entity.content.text)
 		assertNotNull(feedback)
 	}
-	
+
 	void testSubmitFeedItemHasCorrectTopic() {
 		String feedback = "Sample feedback."
 		String topic = "Sample topic"
@@ -60,4 +65,19 @@ class FeedItemPosterTest extends GroovyTestCase {
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
 		assertTrue(requestBody.contains(" #[${topic}]"))
 	}
+
+//	void testForHttpClientCallInPostFeedItem() {
+//		def clientMock = new MockFor(HttpClient)
+//		clientMock.demand.execute() {}
+//		clientMock.use {
+//			feedItemPoster.postFeedItem("test","test","test","test", HttpClients.createDefault())
+//		}
+//		def flag = false
+//		HttpClient client = HttpClients.createDefault();
+//		client.metaClass.execute = { HttpUriRequest httpRequest ->
+//			flag = true
+//		}
+//		feedItemPoster.postFeedItem("test","test","test","test", client)
+//		assertTrue(flag)
+//	}
 }
