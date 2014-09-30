@@ -3,10 +3,14 @@ import static org.mockito.Mockito.*
 import groovy.json.JsonSlurper
 import groovy.mock.interceptor.*
 
+import org.apache.http.HttpResponse
+import org.apache.http.HttpVersion
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.*
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.message.BasicHeader
+import org.apache.http.message.BasicHttpResponse
+import org.apache.http.message.BasicStatusLine
 import org.junit.*
 import org.mockito.*
 
@@ -15,7 +19,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 	private HttpUriRequest request
 
 	void setUp() {
-		feedItemPoster = new FeedItemPoster()
+		feedItemPoster = new FeedItemPosterImpl()
 	}
 
 	void testSubmitNullFeedItemWillNotSubmitRequestToChatter() {
@@ -70,7 +74,8 @@ class FeedItemPosterTest extends GroovyTestCase {
 
 	void testForHttpClientCallInPostFeedItem() {
 		HttpClient defaultHttpClient = Mockito.mock(HttpClient)
-		when(defaultHttpClient.execute(any())).thenReturn(null);
+		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
+		when(defaultHttpClient.execute(any())).thenReturn(response)
 		feedItemPoster.postFeedItem("test","test","test","test", defaultHttpClient)
 		Mockito.verify(defaultHttpClient, Mockito.times(1))
 	}

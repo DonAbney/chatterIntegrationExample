@@ -12,49 +12,35 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 
 	void testFindFeedItemsDoesNotFail() {
 		initFeedItemRetriever()
-		List<FeedItem> feedItems = feedItemRetriever.findFeedItems("url", "token", "group", "topic")
+		List<FeedItem> feedItems = feedItemRetriever.findFeedItems("url", "token", "topic")
 		assertNotNull(feedItems)
-	}
-
-	void testFindFeedItemsReturnsExceptionWithNullInput() {
-		initFeedItemRetriever()
-		shouldFail(IllegalArgumentException) {
-			feedItemRetriever.findFeedItems(null, null, null, null)
-		}
 	}
 
 	void testFindFeedItemsFailsWithNullUrl() {
 		initFeedItemRetriever()
 		shouldFail(IllegalArgumentException) {
-			feedItemRetriever.findFeedItems(null, "token", "group", "topic")
+			feedItemRetriever.findFeedItems(null, "token", "topic")
 		}
 	}
 
 	void testFindFeedItemsFailsWithNullToken() {
 		initFeedItemRetriever()
 		shouldFail(IllegalArgumentException) {
-			feedItemRetriever.findFeedItems("url", null, "group", "topic")
-		}
-	}
-
-	void testFindFeedItemsFailsWithNullGroup() {
-		initFeedItemRetriever()
-		shouldFail(IllegalArgumentException) {
-			feedItemRetriever.findFeedItems("url", "token", null, "topic")
+			feedItemRetriever.findFeedItems("url", null, "topic")
 		}
 	}
 
 	void testFindFeedItemsFailsWithNullTopic() {
 		initFeedItemRetriever()
 		shouldFail(IllegalArgumentException) {
-			feedItemRetriever.findFeedItems("url", "token", "group", null)
+			feedItemRetriever.findFeedItems("url", "token", null)
 		}
 	}
 
-	void testCreateFeedItemHttpRequestWithCorrectGroupAndTopic() {
+	void testCreateFeedItemHttpRequestWithCorrectTopic() {
 		FeedItemRetrieverImpl feedItemRetrieverImpl = new FeedItemRetrieverImpl()
-		HttpUriRequest request = feedItemRetrieverImpl.createFeedItemHttpRequest("testUrl", "token", "testGroup", "topic")
+		HttpUriRequest request = feedItemRetrieverImpl.createFeedItemHttpRequest("testUrl", "token", "topic")
 		
-		assertEquals("testUrl/services/data/v32.0/chatter/feeds/record/testGroup/feed-elements", request.getURI().toString());
+		assertEquals("testUrl/services/data/v31.0/connect/topics?exactMatch=true&q=topic", request.getURI().toString());
 	}
 }

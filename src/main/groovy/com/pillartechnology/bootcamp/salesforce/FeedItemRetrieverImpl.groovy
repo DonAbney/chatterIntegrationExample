@@ -6,19 +6,17 @@ import org.apache.http.client.methods.RequestBuilder
 
 class FeedItemRetrieverImpl implements FeedItemRetriever {
 
-	private static String GROUP_FEED_PLACEHOLDER = "#{groupId}"
-	private static String GROUP_FEED_URI = "/services/data/v32.0/chatter/feeds/record/" + GROUP_FEED_PLACEHOLDER +"/feed-elements"
+	private static String GROUP_FEED_URI = "/services/data/v31.0/connect/topics?exactMatch=true&q="
 	
-	List<FeedItem> findFeedItems(url, token, group, topic) {
+	List<FeedItem> findFeedItems(url, token, topic) {
 
-		if (url == null || token == null || group == null || topic == null) {
+		if (url == null || token == null || topic == null) {
 			throw new IllegalArgumentException()
 		}
 		new ArrayList<FeedItem>()
 	}
 
-	protected HttpUriRequest createFeedItemHttpRequest(url, token, group, topic) {
-		String uri = url + GROUP_FEED_URI.replace(GROUP_FEED_PLACEHOLDER, group);
-		RequestBuilder.get().setUri(uri).build()
+	protected HttpUriRequest createFeedItemHttpRequest(url, token, topic) {
+		RequestBuilder.get().setUri(url + GROUP_FEED_URI + topic).build()
 	}
 }
