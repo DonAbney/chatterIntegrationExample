@@ -4,5 +4,5 @@ import org.apache.http.client.HttpClient;
 
 
 interface FeedItemPoster {
-	void postFeedItem(String url, String token, String feedback, String topic,	HttpClient httpClient, String thirdPartyUrl)
+	void postFeedItem(String url, String token, String feedback, List<String> topics,	HttpClient httpClient, String thirdPartyUrl)
 }

@@ -18,74 +18,78 @@ import org.mockito.*
 class FeedItemPosterTest extends GroovyTestCase {
 	FeedItemPoster feedItemPoster
 	HttpUriRequest request
+	List<String> topic
 	
 	void setUp() {
 		feedItemPoster = new FeedItemPosterImpl()
+		topic = new ArrayList<String>()
+		topic.add("test topic")
 	}
 
 	void testSubmitNullFeedItemWillNotSubmitRequestToChatter() {
 		def client = HttpClients.createDefault()
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem(null, "test", "test", "test", client, "test") }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", null, "test", "test", client, "test") }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", null, "test", client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem(null, "test", "test", new ArrayList<String>(), client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", null, "test", new ArrayList<String>(), client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", null, new ArrayList<String>(), client, "test") }
 		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", null, client, "test") }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", null, "test") }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", client, null) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", new ArrayList<String>(), null, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", new ArrayList<String>(), client, null) }
 	}
 
 	void testSubmitMessageHasURLNonEmptyPath() {
-
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", "", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", new ArrayList<String>(), "")
 		assertFalse("/".equals(request.getURI().toString()))
 	}
 
 	void testSubmitMessageHasCorrectFeedbackMessage() {
-
 		String feedback = "Sample feedback."
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, "", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, new ArrayList<String>(), "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
 		assertTrue(requestBody.contains("Sample feedback."))
 	}
 
 	void testSubmitMessageHasValidHeaderValues() {
-
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "token", "", "", "")
-
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "token", "", new ArrayList<String>(), "")
 		Map<String, BasicHeader> headerMap = new HashMap<String, BasicHeader>()
 		request.getAllHeaders().each { header ->
 			headerMap.put(header.getName(), header)
 		}
-
 		assertEquals("Bearer token", headerMap.get("Authorization").value)
 		assertEquals("application/json", headerMap.get("Content-Type").value)
 	}
 
 	void testSubmitFeedItemFormat() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "Feedback", "", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "Feedback", new ArrayList<String>(), "")
 		def feedback = new JsonSlurper().parseText(request.entity.content.text)
 		assertNotNull(feedback)
 	}
 
 	void testSubmitFeedItemHasCorrectTopic() {
 		String feedback = "Sample feedback."
-		String topic = "Sample topic"
 		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, topic, "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
-		assertTrue(requestBody.contains(" #[${topic}]"))
+		assertTrue(requestBody.contains("#[${topic[0]}]"))
+	}
+
+	void testSubmitFeedItemHandlesMultipleTopics() {
+		topic.add("sample topic")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", topic, "")
+		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
+		assertTrue(requestBody.contains("#[${topic[0]}] #[${topic[1]}]"))
 	}
 	
 	void testFeedItemHasAttachedLinkToThirdPartyLearningPage() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic", "testurl")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", topic, "testurl")
 		def linkAttachment = new JsonSlurper().parseText(request.entity.content.text).get("attachment")
 		assertNotNull(linkAttachment)
 	}
 	
 	void testAttachmentHasCorrectUrlAndUrlName() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic", "testurl")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", topic, "testurl")
 		def linkUrl = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("url")
 		def linkName = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("urlName")
-		assert linkUrl == "testurl/test_topic"
-		assert linkName == "test_topic"
+		assert linkUrl == "testurl"
+		assert linkName == "testurl"
 	}
 	
 
@@ -93,7 +97,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 		def defaultHttpClient = Mockito.mock(HttpClient.class)
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
 		when(defaultHttpClient.execute(any())).thenReturn(response)
-		feedItemPoster.postFeedItem("test","test","test","test", defaultHttpClient, "test")
+		feedItemPoster.postFeedItem("test","test","test",new ArrayList<String>(), defaultHttpClient, "test")
 		Mockito.verify(defaultHttpClient, times(1)).execute(any())
 	}
 	
@@ -103,7 +107,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 404, "test"))
 		when(defaultHttpClient.execute(any())).thenReturn(response)
 		shouldFail(HttpException) {
-			feedItemPoster.postFeedItem("test", "test", "test", "test", defaultHttpClient, "test")		
+			feedItemPoster.postFeedItem("test", "test", "test", new ArrayList<String>(), defaultHttpClient, "test")		
 		}
 		Mockito.verify(defaultHttpClient, times(1)).execute(any())
 	}
