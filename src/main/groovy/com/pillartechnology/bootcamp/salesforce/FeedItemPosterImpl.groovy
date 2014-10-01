@@ -20,7 +20,7 @@ class FeedItemPosterImpl implements FeedItemPoster {
 		}
 		
 		def request = createFeedRequest(url, token, feedback, topic)
-		HttpResponse response = httpClient.execute(request) // perhaps revisit testing this call later
+		HttpResponse response = httpClient.execute(request) 
 		if (response.getStatusLine().getStatusCode() != 201) {
 			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
 		}
