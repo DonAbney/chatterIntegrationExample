@@ -13,6 +13,8 @@ class FeedItemPosterImpl implements FeedItemPoster {
 	
 	static String CHATTER_GROUP = "Playbook Feedback"
 	static final String CHATTER_ELEMENT_TYPE = "FeedItem"
+	static final String THIRD_PARTY_URL = "http://www.thirdparty.com"
+	
 	
 	void postFeedItem(String url, String token, String feedback, String topic,	HttpClient httpClient) {
 		if (url == null || token == null || feedback == null || topic == null || httpClient == null) {
@@ -30,12 +32,8 @@ class FeedItemPosterImpl implements FeedItemPoster {
 		def output = new JsonBuilder()
 		output {
 			body {
-				messageSegments([
-					[
-						type: "Text",
-						text: "${feedback} #[${topic}]"
-					]
-				])
+				messageSegments([[type: "Text", text: "${feedback} #[${topic}]"]])
+				attachment([[attachmentType: "Link", url: "${THIRD_PARTY_URL}/${topic}", urlName: topic]])
 			}
 			feedElementType(CHATTER_ELEMENT_TYPE)
 			subjectId(CHATTER_GROUP)
