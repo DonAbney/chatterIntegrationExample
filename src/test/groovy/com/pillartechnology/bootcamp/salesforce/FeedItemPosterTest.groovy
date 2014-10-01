@@ -72,14 +72,14 @@ class FeedItemPosterTest extends GroovyTestCase {
 		String feedback = "Sample feedback."
 		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, topic, "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
-		assertTrue(requestBody.contains("#${topic[0]}"))
+		assertTrue(requestBody.contains("#[${topic[0]}]"))
 	}
 
 	void testSubmitFeedItemHandlesMultipleTopics() {
 		topic.add("sample topic")
 		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", topic, "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
-		assertTrue(requestBody.contains("#${topic[0]} #${topic[1]}"))
+		assertTrue(requestBody.contains("#[${topic[0]}] #[${topic[1]}]"))
 	}
 	
 	void testFeedItemHasAttachedLinkToThirdPartyLearningPage() {

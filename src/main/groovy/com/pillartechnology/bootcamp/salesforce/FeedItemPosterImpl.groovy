@@ -28,7 +28,7 @@ class FeedItemPosterImpl implements FeedItemPoster {
 
 	HttpUriRequest createFeedRequest(String url, String token, String feedback, List<String> topics, String thirdPartyUrl) {
 		String topicList = ""
-		topics.each() { topic -> topicList <<= "#${topic} " }
+		topics.each() { topic -> topicList <<= "#[${topic}] " }
 		def output = new JsonBuilder()
 		output {
 			body {
