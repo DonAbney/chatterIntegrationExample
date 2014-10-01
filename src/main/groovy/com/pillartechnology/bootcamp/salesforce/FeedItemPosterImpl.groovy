@@ -33,8 +33,8 @@ class FeedItemPosterImpl implements FeedItemPoster {
 		output {
 			body {
 				messageSegments([[type: "Text", text: "${feedback} #[${topic}]"]])
-				attachment([[attachmentType: "Link", url: "${THIRD_PARTY_URL}/${topic}", urlName: topic]])
 			}
+			attachment([attachmentType: "Link", url: "${THIRD_PARTY_URL}/${topic}", urlName: topic])
 			feedElementType(CHATTER_ELEMENT_TYPE)
 			subjectId(CHATTER_GROUP)
 		}

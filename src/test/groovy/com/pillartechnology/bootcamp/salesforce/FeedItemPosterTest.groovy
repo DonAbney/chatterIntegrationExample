@@ -77,16 +77,16 @@ class FeedItemPosterTest extends GroovyTestCase {
 		assertTrue(requestBody.contains(" #[${topic}]"))
 	}
 	
-	void testHasAttachmentLinkToThirdPartyLearningPage() {
+	void testFeedItemHasAttachedLinkToThirdPartyLearningPage() {
 		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic")
-		def link = new JsonSlurper().parseText(request.entity.content.text).get("body").get("attachment")
-		assertNotNull(link)
+		def linkAttachment = new JsonSlurper().parseText(request.entity.content.text).get("attachment")
+		assertNotNull(linkAttachment)
 	}
 	
 	void testAttachmentHasCorrectUrlAndUrlName() {
 		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic")
-		def linkUrl = new JsonSlurper().parseText(request.entity.content.text).get("body").get("attachment")[0].get("url")
-		def linkName = new JsonSlurper().parseText(request.entity.content.text).get("body").get("attachment")[0].get("urlName")
+		def linkUrl = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("url")
+		def linkName = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("urlName")
 		assert linkUrl == "http://www.thirdparty.com/test_topic"
 		assert linkName == "test_topic"
 	}
