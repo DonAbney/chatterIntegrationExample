@@ -19,7 +19,7 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 	}
 
 	protected HttpUriRequest createFeedItemHttpRequest(url, token, topic) {
-		RequestBuilder.get().setUri(url + GROUP_FEED_URI + topic).build()
+		RequestBuilder.get().setUri(url + TOPIC_ID_URI + topic).build()
 	}
 	
 	//get topic id from TOPIC_ID_URI
