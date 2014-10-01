@@ -18,13 +18,9 @@ import org.mockito.*
 class FeedItemPosterTest extends GroovyTestCase {
 	FeedItemPoster feedItemPoster
 	HttpUriRequest request
-	HttpClient defaultHttpClient
-	HttpClient failingHttpClient
 	
 	void setUp() {
 		feedItemPoster = new FeedItemPosterImpl()
-		defaultHttpClient = Mockito.mock(HttpClient.class)
-		failingHttpClient = Mockito.mock(HttpClient.class)
 	}
 
 	void testSubmitNullFeedItemWillNotSubmitRequestToChatter() {
@@ -93,19 +89,22 @@ class FeedItemPosterTest extends GroovyTestCase {
 	}
 	
 
-//	void testForHttpClientCallInPostFeedItem() {
-//		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
-//		when(defaultHttpClient.execute(any())).thenReturn(response)
-//		feedItemPoster.postFeedItem("test","test","test","test", defaultHttpClient)
-//		Mockito.verify(defaultHttpClient, Mockito.times(1))
-//	}
+	void testForHttpClientCallInPostFeedItem() {
+		def defaultHttpClient = Mockito.mock(HttpClient.class)
+		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
+		when(defaultHttpClient.execute(any())).thenReturn(response)
+		feedItemPoster.postFeedItem("test","test","test","test", defaultHttpClient, "test")
+		Mockito.verify(defaultHttpClient, times(1)).execute(any())
+	}
 	
 	// will revisit this.  we need to figure out what the hell mockito is doing
-//	void testHttpExceptionIsThrownWhenClientDoesNotReturn200() {
-//		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 404, "test"))
-//		when(failingHttpClient.execute(any())).thenReturn(response)
-//		shouldFail(HttpException) {
-//			feedItemPoster.postFeedItem("test", "test", "test", "test", failingHttpClient)		
-//		}
-//	}
+	void testHttpExceptionIsThrownWhenClientDoesNotReturn200() {
+		def defaultHttpClient = Mockito.mock(HttpClient.class)
+		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 404, "test"))
+		when(defaultHttpClient.execute(any())).thenReturn(response)
+		shouldFail(HttpException) {
+			feedItemPoster.postFeedItem("test", "test", "test", "test", defaultHttpClient, "test")		
+		}
+		Mockito.verify(defaultHttpClient, times(1)).execute(any())
+	}
 }
