@@ -29,30 +29,31 @@ class FeedItemPosterTest extends GroovyTestCase {
 
 	void testSubmitNullFeedItemWillNotSubmitRequestToChatter() {
 		def client = HttpClients.createDefault()
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem(null, "test", "test", "test", client) }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", null, "test", "test", client) }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", null, "test", client) }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", null, client) }
-		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", null) }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem(null, "test", "test", "test", client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", null, "test", "test", client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", null, "test", client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", null, client, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", null, "test") }
+		shouldFail(IllegalArgumentException) { feedItemPoster.postFeedItem("test", "test", "test", "test", client, null) }
 	}
 
 	void testSubmitMessageHasURLNonEmptyPath() {
 
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "", "", "")
 		assertFalse("/".equals(request.getURI().toString()))
 	}
 
 	void testSubmitMessageHasCorrectFeedbackMessage() {
 
 		String feedback = "Sample feedback."
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, "", "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
 		assertTrue(requestBody.contains("Sample feedback."))
 	}
 
 	void testSubmitMessageHasValidHeaderValues() {
 
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "token", "", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "token", "", "", "")
 
 		Map<String, BasicHeader> headerMap = new HashMap<String, BasicHeader>()
 		request.getAllHeaders().each { header ->
@@ -64,7 +65,7 @@ class FeedItemPosterTest extends GroovyTestCase {
 	}
 
 	void testSubmitFeedItemFormat() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "Feedback", "")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", "Feedback", "", "")
 		def feedback = new JsonSlurper().parseText(request.entity.content.text)
 		assertNotNull(feedback)
 	}
@@ -72,22 +73,22 @@ class FeedItemPosterTest extends GroovyTestCase {
 	void testSubmitFeedItemHasCorrectTopic() {
 		String feedback = "Sample feedback."
 		String topic = "Sample topic"
-		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, topic)
+		HttpUriRequest request = feedItemPoster.createFeedRequest("", "", feedback, topic, "")
 		def requestBody = new JsonSlurper().parseText(request.entity.content.text).get("body").get("messageSegments")[0].get("text")
 		assertTrue(requestBody.contains(" #[${topic}]"))
 	}
 	
 	void testFeedItemHasAttachedLinkToThirdPartyLearningPage() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic", "testurl")
 		def linkAttachment = new JsonSlurper().parseText(request.entity.content.text).get("attachment")
 		assertNotNull(linkAttachment)
 	}
 	
 	void testAttachmentHasCorrectUrlAndUrlName() {
-		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic")
+		HttpUriRequest request = feedItemPoster.createFeedRequest("test", "test", "feedback", "test_topic", "testurl")
 		def linkUrl = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("url")
 		def linkName = new JsonSlurper().parseText(request.entity.content.text).get("attachment").get("urlName")
-		assert linkUrl == "http://www.thirdparty.com/test_topic"
+		assert linkUrl == "testurl/test_topic"
 		assert linkName == "test_topic"
 	}
 	

@@ -13,28 +13,27 @@ class FeedItemPosterImpl implements FeedItemPoster {
 	
 	static String CHATTER_GROUP = "Playbook Feedback"
 	static final String CHATTER_ELEMENT_TYPE = "FeedItem"
-	static final String THIRD_PARTY_URL = "http://www.thirdparty.com"
 	
 	
-	void postFeedItem(String url, String token, String feedback, String topic,	HttpClient httpClient) {
-		if (url == null || token == null || feedback == null || topic == null || httpClient == null) {
+	void postFeedItem(String url, String token, String feedback, String topic,	HttpClient httpClient, String thirdPartyUrl) {
+		if (url == null || token == null || feedback == null || topic == null || httpClient == null || thirdPartyUrl == null) {
 			throw new IllegalArgumentException()
 		}
 		
-		def request = createFeedRequest(url, token, feedback, topic)
+		def request = createFeedRequest(url, token, feedback, topic, thirdPartyUrl)
 		HttpResponse response = httpClient.execute(request) 
 		if (response.getStatusLine().getStatusCode() != 201) {
 			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
 		}
 	}
 
-	HttpUriRequest createFeedRequest(String url, String token, String feedback, String topic) {
+	HttpUriRequest createFeedRequest(String url, String token, String feedback, String topic, String thirdPartyUrl) {
 		def output = new JsonBuilder()
 		output {
 			body {
 				messageSegments([[type: "Text", text: "${feedback} #[${topic}]"]])
 			}
-			attachment([attachmentType: "Link", url: "${THIRD_PARTY_URL}/${topic}", urlName: topic])
+			attachment([attachmentType: "Link", url: "${thirdPartyUrl}/${topic}", urlName: topic])
 			feedElementType(CHATTER_ELEMENT_TYPE)
 			subjectId(CHATTER_GROUP)
 		}
