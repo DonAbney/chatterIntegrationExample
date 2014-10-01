@@ -3,6 +3,7 @@ package com.pillartechnology.bootcamp.salesforce
 import org.apache.http.HttpResponse
 import org.apache.http.HttpVersion
 import org.apache.http.client.methods.HttpUriRequest
+import org.apache.http.entity.StringEntity
 import org.apache.http.message.BasicHttpResponse
 import org.apache.http.message.BasicStatusLine
 
@@ -50,7 +51,22 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 	
 	void testParseTopicIdFromTopicIdResponse() {
 		initFeedItemRetriever()
+		StringEntity respBody = new StringEntity(
+		"{ " +
+			"\"currentPageUrl\": null," +
+			"\"nextPageUrl\": null," +
+			"\"topics\": [{ " +
+		    "\"createdDate\": \"2014-08-21T18:29:53.000Z\"," +
+	        "\"description\": null," +
+            "\"id\": \"targetTopicId\"," +
+			"\"name\": \"Holler\"," +
+			"\"talkingAbout\": 1," +
+			"\"url\": \"/services/data/v31.0/connect/topics/0TOo00000008QB7GAM\"" +
+			"}]" +
+		"}")
+		
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
+		response.setEntity(respBody)
 		def topicId = feedItemRetriever.parseTopicIdFromResponse(response)
 		assertEquals("targetTopicId",topicId)
 	}

@@ -1,5 +1,7 @@
 package com.pillartechnology.bootcamp.salesforce
 
+import groovy.json.JsonSlurper
+
 import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpUriRequest
 import org.apache.http.client.methods.RequestBuilder
@@ -24,8 +26,8 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 		RequestBuilder.get().setUri(url + TOPIC_ID_URI + topic).build()
 	}
 	
-	protected String parseTopicIdFromResponse(HttpResponse resp) {
-		"targetTopicId"
+	protected String parseTopicIdFromResponse(HttpResponse response) {
+		new JsonSlurper().parseText(response.entity.content.text).get("topics")[0].get("id")
 	}
 	
 	protected HttpUriRequest createMessagesFromTopicIdHttpRequest(url, token, topicId) {
