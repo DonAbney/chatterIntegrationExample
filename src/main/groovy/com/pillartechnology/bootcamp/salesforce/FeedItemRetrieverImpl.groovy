@@ -13,26 +13,43 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 	private static String TOPIC_ID_URI = "/services/data/v31.0/connect/topics?exactMatch=true&q="
 	private static String TOPIC_MESSAGES_URI_PREFIX = "/services/data/v31.0/chatter/feeds/topics/"
 	private static String TOPIC_MESSAGES_URI_SUFFIX = "/feed-items"
+
+	//add web url for topic page to third party page to link back to sales force using TOPIC_PAGE_URL
 	private static String TOPIC_PAGE_URL = "_ui/core/chatter/topics/TopicPage?name="
 
 	List<FeedItem> findFeedItems(url, token, topic, httpClient) {
 
-		if (url == null || token == null || topic == null) {
+		if (anyParamsNull(url, token, topic, httpClient)) {
 			throw new IllegalArgumentException()
 		}
+		parseMessagesFromResponse(requestMessages(url,token,requestTopicId(url, token, topic, httpClient), httpClient))
+	}
+
+	boolean anyParamsNull(url, token, topic, httpClient) {
+		url == null || token == null || topic == null
+	}
+	
+	String requestTopicId(url, token, topic, httpClient) {
 		def topicRequest = createTopicIdHttpRequest(url,token,topic)
-		HttpResponse response = httpClient.execute(topicRequest)
-		if (response.getStatusLine().getStatusCode() != 201) {
-			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
-		}
-		def topicId = parseTopicIdFromResponse(response)
 		
+		HttpResponse response = httpClient.execute(topicRequest)
+		throwHttpExceptionOnBadStatusValue(response)
+		parseTopicIdFromResponse(response)
+
+	}
+	
+	HttpResponse requestMessages(url, token, topicId, httpClient) {
 		def messageRequest = createMessagesFromTopicIdHttpRequest(url, token, topicId)
-		response = httpClient.execute(messageRequest)
+
+		HttpResponse response = httpClient.execute(messageRequest)
+		throwHttpExceptionOnBadStatusValue(response)
+		response		
+	}
+	
+	void throwHttpExceptionOnBadStatusValue(response) {
 		if (response.getStatusLine().getStatusCode() != 201) {
 			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
 		}
-		parseMessagesFromResponse(response)
 	}
 
 	protected HttpUriRequest createTopicIdHttpRequest(url, token, topic) {
@@ -52,7 +69,7 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 	protected HttpUriRequest createMessagesFromTopicIdHttpRequest(url, token, topicId) {
 		RequestBuilder.get().setUri(url + TOPIC_MESSAGES_URI_PREFIX + topicId + TOPIC_MESSAGES_URI_SUFFIX).build()
 	}
-	
+
 	protected List<FeedItem> parseMessagesFromResponse(HttpResponse response) {
 		List<FeedItem> feedItems = new ArrayList<FeedItem>()
 		def topics = new JsonSlurper().parseText(response.entity.content.text).get("items").each({ item ->
@@ -63,6 +80,4 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 		})
 		feedItems
 	}
-
-	//add web url for topic page
 }
