@@ -20,12 +20,19 @@ class FeedItemRetrieverImpl implements FeedItemRetriever {
 		if (url == null || token == null || topic == null) {
 			throw new IllegalArgumentException()
 		}
-		def request = createTopicIdHttpRequest(url,token,topic)
-		HttpResponse response = httpClient.execute(request)
+		def topicRequest = createTopicIdHttpRequest(url,token,topic)
+		HttpResponse response = httpClient.execute(topicRequest)
 		if (response.getStatusLine().getStatusCode() != 201) {
 			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
 		}
-		new ArrayList<FeedItem>()
+		def topicId = parseTopicIdFromResponse(response)
+		
+		def messageRequest = createMessagesFromTopicIdHttpRequest(url, token, topicId)
+		response = httpClient.execute(messageRequest)
+		if (response.getStatusLine().getStatusCode() != 201) {
+			throw new HttpException("Failed to post message to chatter: " + response.getStatusLine().toString())
+		}
+		parseMessagesFromResponse(response)
 	}
 
 	protected HttpUriRequest createTopicIdHttpRequest(url, token, topic) {

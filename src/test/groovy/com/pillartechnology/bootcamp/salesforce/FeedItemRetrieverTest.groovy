@@ -1,5 +1,6 @@
 package com.pillartechnology.bootcamp.salesforce
 
+import static org.mockito.Mockito.*
 import org.apache.http.HttpException
 import org.apache.http.HttpResponse
 import org.apache.http.HttpVersion
@@ -10,7 +11,6 @@ import org.apache.http.entity.StringEntity
 import org.apache.http.message.BasicHttpResponse
 import org.apache.http.message.BasicStatusLine
 import org.mockito.Mockito
-import static org.mockito.Mockito.*
 
 class FeedItemRetrieverTest extends GroovyTestCase {
 
@@ -40,9 +40,11 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 			feedItemRetriever.findFeedItems("url", "token", null, null)
 		}
 	}
-	
+
 	void testFindFeedItemsThrowsHttpExceptionOnRequestFailure() {
 		initFeedItemRetriever()
+
+
 		def defaultHttpClient = Mockito.mock(HttpClient.class)
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 404, "test"))
 		when(defaultHttpClient.execute(any())).thenReturn(response)
@@ -51,44 +53,77 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 		}
 	}
 
+	void testFindFeedItemsReturnsProperMessages() {
+		initFeedItemRetriever()
+
+		def defaultHttpClient = Mockito.mock(HttpClient.class)
+		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 404, "test"))
+
+		StringEntity topicRespBody = new StringEntity(
+				"{ " +
+				"\"currentPageUrl\": null," +
+				"\"nextPageUrl\": null," +
+				"\"topics\": []" +
+				"}")
+
+		HttpResponse topicResponse = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
+		topicResponse.setEntity(topicRespBody)
+
+		InputStreamEntity messageRespBody = new InputStreamEntity(
+				Thread.currentThread().getContextClassLoader().getResourceAsStream("messagesResponse.json"))
+		HttpResponse messageResponse = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
+		messageResponse.setEntity(messageRespBody)
+
+		when(defaultHttpClient.execute(any()))
+				.thenReturn(topicResponse)
+				.thenReturn(messageResponse)
+
+		def messages = feedItemRetriever.findFeedItems("testUrl", "token", "topic", defaultHttpClient)
+		assertTrue(!messages.isEmpty())
+
+		assertEquals(2, messages.size())
+		assertEquals("kristen smith", messages[0].author)
+		assertEquals("Something cool! ", messages[0].body)
+	}
+
 	void testCreateTopicIdHttpRequestWithCorrectTopic() {
 		initFeedItemRetriever()
 		HttpUriRequest request = feedItemRetriever.createTopicIdHttpRequest("testUrl", "token", "topic")
-		
+
 		assertEquals("testUrl/services/data/v31.0/connect/topics?exactMatch=true&q=topic", request.getURI().toString());
 	}
-	
+
 	void testParseTopicIdFromTopicIdResponse() {
 		initFeedItemRetriever()
 		StringEntity respBody = new StringEntity(
-		"{ " +
-			"\"currentPageUrl\": null," +
-			"\"nextPageUrl\": null," +
-			"\"topics\": [{ " +
-		    "\"createdDate\": \"2014-08-21T18:29:53.000Z\"," +
-	        "\"description\": null," +
-            "\"id\": \"targetTopicId\"," +
-			"\"name\": \"Holler\"," +
-			"\"talkingAbout\": 1," +
-			"\"url\": \"/services/data/v31.0/connect/topics/0TOo00000008QB7GAM\"" +
-			"}]" +
-		"}")
-		
+				"{ " +
+				"\"currentPageUrl\": null," +
+				"\"nextPageUrl\": null," +
+				"\"topics\": [{ " +
+				"\"createdDate\": \"2014-08-21T18:29:53.000Z\"," +
+				"\"description\": null," +
+				"\"id\": \"targetTopicId\"," +
+				"\"name\": \"Holler\"," +
+				"\"talkingAbout\": 1," +
+				"\"url\": \"/services/data/v31.0/connect/topics/0TOo00000008QB7GAM\"" +
+				"}]" +
+				"}")
+
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
 		response.setEntity(respBody)
 		def topicId = feedItemRetriever.parseTopicIdFromResponse(response)
 		assertEquals("targetTopicId",topicId)
 	}
-	
+
 	void testParseTopicIdFromTopicIdResponseWithEmptyTopics() {
 		initFeedItemRetriever()
 		StringEntity respBody = new StringEntity(
-		"{ " +
-			"\"currentPageUrl\": null," +
-			"\"nextPageUrl\": null," +
-			"\"topics\": []" +
-		"}")
-		
+				"{ " +
+				"\"currentPageUrl\": null," +
+				"\"nextPageUrl\": null," +
+				"\"topics\": []" +
+				"}")
+
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
 		response.setEntity(respBody)
 		def topicId = feedItemRetriever.parseTopicIdFromResponse(response)
@@ -100,16 +135,16 @@ class FeedItemRetrieverTest extends GroovyTestCase {
 		HttpUriRequest request = feedItemRetriever.createMessagesFromTopicIdHttpRequest("testUrl", "token", "topicid")
 		assertEquals("testUrl/services/data/v31.0/chatter/feeds/topics/topicid/feed-items", request.getURI().toString());
 	}
-	
+
 	void testParseMessagesFromTopicResponse() {
 		initFeedItemRetriever()
 		InputStreamEntity respBody = new InputStreamEntity(
-			Thread.currentThread().getContextClassLoader().getResourceAsStream("messagesResponse.json"))
+				Thread.currentThread().getContextClassLoader().getResourceAsStream("messagesResponse.json"))
 		HttpResponse response = new BasicHttpResponse(new BasicStatusLine(HttpVersion.HTTP_1_1, 201, "test"))
 		response.setEntity(respBody)
 		def messages = feedItemRetriever.parseMessagesFromResponse(response)
 		assertTrue(!messages.isEmpty())
-		
+
 		assertEquals(2, messages.size())
 		assertEquals("kristen smith", messages[0].author)
 		assertEquals("Something cool! ", messages[0].body)
